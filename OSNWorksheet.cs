@@ -10,7 +10,7 @@ namespace ExcelStringSearch
     {
         public Sheet Sheet { get; private set; }
 
-        private WorksheetPart WorksheetPart;
+        private readonly WorksheetPart WorksheetPart;
 
         public HashSet<Cell> CellSet { get; private set; }
 

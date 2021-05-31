@@ -7,8 +7,7 @@ namespace ExcelStringSearch
 {
     public class SearchString
     {
-        private OSNSharedStrings OSNSharedStrings;
-        private OSNWorkbook OSNWorkbook;
+        private readonly OSNWorkbook OSNWorkbook;
 
         public SearchString(Stream stream)
         {
@@ -32,12 +31,13 @@ namespace ExcelStringSearch
 
                 if (!siIndexCellSetTable.Any()) continue;
 
-                var searchStringResult = new SearchStringResult();
-                searchStringResult.OSNWorksheet = osnWorksheet;
-                searchStringResult.SiIndexCellSetTable = siIndexCellSetTable;
+                var searchStringResult = new SearchStringResult
+                {
+                    OSNWorksheet = osnWorksheet,
+                    SiIndexCellSetTable = siIndexCellSetTable
+                };
                 result.Add(searchStringResult);
             }
-
             return result;
         }
 

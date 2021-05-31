@@ -5,15 +5,15 @@ using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace ExcelStringSearch
 {
-    class OSNSharedStrings
+    public class OSNSharedStrings
     {
-        private SharedStringTablePart SharedStringTablePart;
+        private readonly SharedStringTablePart SharedStringTablePart;
 
         public Dictionary<int, SharedStringItem> IndexSiTable { get; private set; }
 
         public bool HasPart()
         {
-            return this.SharedStringTablePart != null ? true : false;
+            return this.SharedStringTablePart != null;
         }
 
         public OSNSharedStrings(SharedStringTablePart sharedStringTablePart)

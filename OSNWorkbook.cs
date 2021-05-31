@@ -9,8 +9,8 @@ namespace ExcelStringSearch
 {
     public class OSNWorkbook
     {
-        private MemoryStream WorkbookStream;
-        private SpreadsheetDocument XlsxDocument;
+        private readonly MemoryStream WorkbookStream;
+        private readonly SpreadsheetDocument XlsxDocument;
         private WorkbookPart WorkbookPart;
 
         public OSNSharedStrings OSNSharedStrings { get; private set; }
@@ -34,6 +34,7 @@ namespace ExcelStringSearch
         {
             this.ParseWorkbook();
             this.ParseRelatedParts();
+            this.ParseOSNWorksheetTable();
         }
 
         private void ParseWorkbook()
