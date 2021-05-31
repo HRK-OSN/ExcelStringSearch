@@ -26,9 +26,11 @@ namespace ExcelStringSearch
         {
             if (this.CellSet.Any()) this.CellSet.Clear();
             var worksheet = this.WorksheetPart.Worksheet;
-            foreach (var cell in this.WorksheetPart.Worksheet.Descendants<Cell>())
+            using var reader = OpenXmlReader.Create(worksheet);
+            while (reader.Read())
             {
-                this.CellSet.Add(cell);
+                if (reader.ElementType != typeof(Cell)) continue;
+                this.CellSet.Add((Cell)reader.LoadCurrentElement());
             }
         }
 

@@ -28,9 +28,11 @@ namespace ExcelStringSearch
             if (!this.HasPart()) return;
             var sharedStringTable = this.SharedStringTablePart.SharedStringTable;
             int siIndex = 0;
-            foreach (var si in sharedStringTable.Descendants<SharedStringItem>())
+            using var reader = OpenXmlReader.Create(sharedStringTable);
+            while (reader.Read())
             {
-                this.IndexSiTable.Add(siIndex++, si);
+                if (reader.ElementType != typeof(SharedStringItem)) continue;
+                this.IndexSiTable.Add(siIndex++, (SharedStringItem)reader.LoadCurrentElement());
             }
         }
 

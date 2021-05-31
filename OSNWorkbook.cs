@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 
@@ -59,11 +60,12 @@ namespace ExcelStringSearch
             var workbook = this.WorkbookPart.Workbook;
             if (this.OSNWorksheetTable.Any()) this.OSNWorksheetTable.Clear();
             int localSheetIndex = 0;
-            foreach (var sheet in workbook.Descendants<Sheet>())
+            using var reader = OpenXmlReader.Create(workbook.Sheets);
+            while (reader.Read())
             {
-                var worksheetPart = (WorksheetPart)this.WorkbookPart.GetPartById(sheet.Id);
+                var sheet = (Sheet)reader.LoadCurrentElement();
                 this.OSNWorksheetTable.Add(localSheetIndex++,
-                    new OSNWorksheet(sheet, worksheetPart));
+                    new OSNWorksheet(sheet, (WorksheetPart)this.WorkbookPart.GetPartById(sheet.Id)));
             }
         }
     }
