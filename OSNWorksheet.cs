@@ -6,7 +6,7 @@ using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace ExcelStringSearch
 {
-    class OSNWorksheet
+    public class OSNWorksheet
     {
         public Sheet Sheet { get; private set; }
 

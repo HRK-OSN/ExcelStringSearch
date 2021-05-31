@@ -7,7 +7,7 @@ using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace ExcelStringSearch
 {
-    class OSNWorkbook
+    public class OSNWorkbook
     {
         private MemoryStream WorkbookStream;
         private SpreadsheetDocument XlsxDocument;
