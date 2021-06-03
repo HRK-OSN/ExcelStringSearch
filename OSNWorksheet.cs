@@ -8,50 +8,44 @@ namespace ExcelStringSearch
 {
     public class OSNWorksheet
     {
-        public Sheet Sheet { get; private set; }
-
         private readonly WorksheetPart WorksheetPart;
+        private readonly Sheet Sheet;
 
-        public HashSet<Cell> CellSet { get; private set; }
+        private readonly Worksheet Worksheet;
+
+        public Dictionary<uint, HashSet<Cell>> SharedStringIndexCellSetTable { get; private set; }
+
+        public string Name
+        {
+            get { return this.Sheet.Name; }
+            set { this.Sheet.Name = value; }
+        }
 
         public OSNWorksheet(Sheet sheet, WorksheetPart worksheetPart)
         {
             this.Sheet = sheet;
             this.WorksheetPart = worksheetPart;
-            this.CellSet = new HashSet<Cell>();
-            this.ParseCell();
+            this.Worksheet = worksheetPart.Worksheet;
+            this.InitSharedStringIndexCell();
         }
 
-        private void ParseCell()
+        private void InitSharedStringIndexCell()
         {
-            if (this.CellSet.Any()) this.CellSet.Clear();
-            var worksheet = this.WorksheetPart.Worksheet;
-            using var reader = OpenXmlReader.Create(worksheet);
+            this.SharedStringIndexCellSetTable = new Dictionary<uint, HashSet<Cell>>();
+            using var reader = OpenXmlReader.Create(this.Worksheet);
             while (reader.Read())
             {
                 if (reader.ElementType != typeof(Cell)) continue;
-                this.CellSet.Add((Cell)reader.LoadCurrentElement());
+                var cell = (Cell)reader.LoadCurrentElement();
+                if (cell.DataType == null || cell.DataType != CellValues.SharedString) continue;
+                uint index = System.UInt32.Parse(cell.InnerText);
+                if (!this.SharedStringIndexCellSetTable.ContainsKey(index))
+                {
+                    this.SharedStringIndexCellSetTable.Add(index, new HashSet<Cell>());
+                }
+                this.SharedStringIndexCellSetTable[index].Add(cell);
             }
         }
 
-        public Dictionary<int, HashSet<Cell>> GetStrIndexCellSetTable()
-        {
-            var strIndexCellSetTable = new Dictionary<int, HashSet<Cell>>();
-            if (!this.CellSet.Any()) this.ParseCell();
-            foreach (var cell in this.CellSet)
-            {
-                if (cell.DataType != CellValues.SharedString) continue;
-                int index = System.Int32.Parse(cell.InnerText);
-                if (strIndexCellSetTable.ContainsKey(index))
-                {
-                    strIndexCellSetTable[index].Add(cell);
-                }
-                else
-                {
-                    strIndexCellSetTable.Add(index, new HashSet<Cell>() { cell });
-                }
-            }
-            return strIndexCellSetTable;
-        }
     }
 }

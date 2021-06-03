@@ -7,11 +7,11 @@ namespace ExcelStringSearch
     {
         public OSNWorksheet OSNWorksheet { get; set; }
 
-        public Dictionary<int, HashSet<Cell>> SiIndexCellSetTable { get; set; }
+        public Dictionary<uint, HashSet<Cell>> SiIndexCellSetTable { get; set; }
 
         public SearchStringResult()
         {
-            this.SiIndexCellSetTable = new Dictionary<int, HashSet<Cell>>();
+            this.SiIndexCellSetTable = new Dictionary<uint, HashSet<Cell>>();
         }
     }
 }

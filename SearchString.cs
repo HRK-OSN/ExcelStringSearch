@@ -21,12 +21,21 @@ namespace ExcelStringSearch
 
             foreach (var osnWorksheet in this.OSNWorkbook.OSNWorksheetTable.Values)
             {
-                var strIndexCellSetTable = osnWorksheet.GetStrIndexCellSetTable();
-                var siIndexCellSetTable = new Dictionary<int, HashSet<Cell>>(strIndexCellSetTable.Count);
+                var sharedStringIndexCellSetTable = osnWorksheet.SharedStringIndexCellSetTable;
+                var siIndexCellSetTable = new Dictionary<uint, HashSet<Cell>>(sharedStringIndexCellSetTable.Count);
                 foreach (var targetSiIndex in targetSiIndexSet)
                 {
-                    if (!strIndexCellSetTable.ContainsKey(targetSiIndex)) continue;
-                    siIndexCellSetTable.Add(targetSiIndex, strIndexCellSetTable[targetSiIndex]);
+                    if (sharedStringIndexCellSetTable.TryGetValue(targetSiIndex, out var cellSet))
+                    {
+                        if (!siIndexCellSetTable.ContainsKey(targetSiIndex))
+                        {
+                            siIndexCellSetTable.Add(targetSiIndex, new HashSet<Cell>());
+                        }
+                        foreach (var cell in cellSet)
+                        {
+                            siIndexCellSetTable[targetSiIndex].Add(cell);
+                        }
+                    }
                 }
 
                 if (!siIndexCellSetTable.Any()) continue;
@@ -41,10 +50,10 @@ namespace ExcelStringSearch
             return result;
         }
 
-        private HashSet<int> SearchSSIIndex(string targetString)
+        private HashSet<uint> SearchSSIIndex(string targetString)
         {
             var indexSiTable = this.OSNWorkbook.OSNSharedStrings.IndexSiTable;
-            var stringIndex = new HashSet<int>(indexSiTable.Count);
+            var stringIndex = new HashSet<uint>(indexSiTable.Count);
 
             foreach (var indexSi in indexSiTable)
             {

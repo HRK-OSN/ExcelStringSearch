@@ -12,9 +12,13 @@ namespace ExcelStringSearch
         private readonly MemoryStream WorkbookStream;
         private readonly SpreadsheetDocument XlsxDocument;
         private WorkbookPart WorkbookPart;
+        private Workbook Workbook;
+
+        private Sheets Sheets;
+        public Dictionary<uint, Sheet> LocalIndexSheetTable { get; private set; }
+        public Dictionary<Sheet, OSNWorksheet> OSNWorksheetTable { get; private set; }
 
         public OSNSharedStrings OSNSharedStrings { get; private set; }
-        public Dictionary<int, OSNWorksheet> OSNWorksheetTable { get; private set; }
 
         public OSNWorkbook(Stream stream)
         {
@@ -26,48 +30,45 @@ namespace ExcelStringSearch
             stream.Position = 0;
 
             this.XlsxDocument = SpreadsheetDocument.Open(this.WorkbookStream, true);
-
-            this.OSNWorksheetTable = new Dictionary<int, OSNWorksheet>();
+            this.Init();
         }
 
-        public void ParseDocument()
-        {
-            this.ParseWorkbook();
-            this.ParseRelatedParts();
-            this.ParseOSNWorksheetTable();
-        }
-
-        private void ParseWorkbook()
+        private void Init()
         {
             this.WorkbookPart = this.XlsxDocument.WorkbookPart;
+            this.Workbook = this.WorkbookPart.Workbook;
+            this.Sheets = this.Workbook.Sheets;
+
+            this.InitWorkSheets();
+            this.InitRelatedParts();
         }
 
-        private void ParseRelatedParts()
+        private void InitWorkSheets()
         {
-            var relatedParts = this.WorkbookPart.Parts;
-            foreach (var relatedPart in relatedParts)
-            {
-                switch (relatedPart.OpenXmlPart)
-                {
-                    case SharedStringTablePart sharedStringTablePart:
-                        this.OSNSharedStrings = new OSNSharedStrings(sharedStringTablePart);
-                        break;
-                }
-            }
-        }
+            this.Sheets = this.Workbook.Sheets;
+            this.LocalIndexSheetTable = new Dictionary<uint, Sheet>();
+            this.OSNWorksheetTable = new Dictionary<Sheet, OSNWorksheet>();
 
-        private void ParseOSNWorksheetTable()
-        {
-            var workbook = this.WorkbookPart.Workbook;
-            if (this.OSNWorksheetTable.Any()) this.OSNWorksheetTable.Clear();
-            int localSheetIndex = 0;
-            using var reader = OpenXmlReader.Create(workbook.Sheets);
+            using var reader = OpenXmlReader.Create(this.Sheets);
+            uint localIndex = 0;
             while (reader.Read())
             {
-                var sheet = (Sheet)reader.LoadCurrentElement();
-                this.OSNWorksheetTable.Add(localSheetIndex++,
-                    new OSNWorksheet(sheet, (WorksheetPart)this.WorkbookPart.GetPartById(sheet.Id)));
+                if (reader.ElementType == typeof(Sheets)) continue;
+                do
+                {
+                    if (reader.ElementType == typeof(Sheet))
+                    {
+                        var sheet = (Sheet)reader.LoadCurrentElement();
+                        this.LocalIndexSheetTable.Add(localIndex++, sheet);
+                        this.OSNWorksheetTable.Add(sheet, new OSNWorksheet(sheet, (WorksheetPart)this.WorkbookPart.GetPartById(sheet.Id)));
+                    }
+                } while (reader.ReadNextSibling());
             }
+        }
+
+        private void InitRelatedParts()
+        {
+            this.OSNSharedStrings = new OSNSharedStrings(this.WorkbookPart.SharedStringTablePart);
         }
     }
 }
