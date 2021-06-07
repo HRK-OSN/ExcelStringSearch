@@ -8,9 +8,9 @@ namespace ExcelStringSearch
 {
     public class OSNWorksheet
     {
-        private readonly WorksheetPart WorksheetPart;
         private readonly Sheet Sheet;
 
+        private readonly WorksheetPart WorksheetPart;
         private readonly Worksheet Worksheet;
 
         public Dictionary<uint, HashSet<Cell>> SharedStringIndexCellSetTable { get; private set; }

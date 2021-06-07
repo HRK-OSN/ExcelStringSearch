@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
@@ -26,19 +27,10 @@ namespace ExcelStringSearch
         private void ParseIndexSiTable()
         {
             uint siIndex = 0;
-            using var reader = OpenXmlReader.Create(this.SharedStringTable);
-            while (reader.Read())
+            foreach (var si in this.SharedStringTable.OfType<SharedStringItem>())
             {
-                if (reader.ElementType == typeof(SharedStringTable)) continue;
-                do
-                {
-                    if (reader.ElementType == typeof(SharedStringItem))
-                    {
-                        var si = (SharedStringItem)reader.LoadCurrentElement();
-                        this.IndexSiTable.Add(siIndex, si);
-                        this.SiTextIndexTable.Add(si.InnerText, siIndex++);
-                    }
-                } while (reader.ReadNextSibling());
+                this.IndexSiTable.Add(siIndex, si);
+                this.SiTextIndexTable.Add(si.InnerText, siIndex++);
             }
         }
     }
