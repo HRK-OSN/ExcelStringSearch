@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace ExcelStringSearch
 {
-    public class OSNWorkbook
+    internal class OSNWorkbook
     {
         private readonly MemoryStream WorkbookStream;
         private readonly SpreadsheetDocument XlsxDocument;
@@ -15,12 +14,11 @@ namespace ExcelStringSearch
         private Workbook Workbook;
 
         private Sheets Sheets;
-        public Dictionary<uint, Sheet> LocalIndexSheetTable { get; private set; }
-        public Dictionary<Sheet, OSNWorksheet> OSNWorksheetTable { get; private set; }
+        internal List<OSNWorksheet> OSNWorksheetList { get; private set; }
 
-        public OSNSharedStrings OSNSharedStrings { get; private set; }
+        internal OSNSharedStrings OSNSharedStrings { get; private set; }
 
-        public OSNWorkbook(Stream stream)
+        internal OSNWorkbook(Stream stream)
         {
             byte[] buffer = new byte[stream.Length];
             stream.Read(buffer, 0, buffer.Length);
@@ -46,23 +44,12 @@ namespace ExcelStringSearch
         private void InitWorkSheets()
         {
             this.Sheets = this.Workbook.Sheets;
-            this.LocalIndexSheetTable = new Dictionary<uint, Sheet>();
-            this.OSNWorksheetTable = new Dictionary<Sheet, OSNWorksheet>();
 
-            using var reader = OpenXmlReader.Create(this.Sheets);
-            uint localIndex = 0;
-            while (reader.Read())
+            var sheetList = this.Sheets.OfType<Sheet>();
+            this.OSNWorksheetList = new List<OSNWorksheet>(sheetList.Count());
+            foreach (var sheet in sheetList)
             {
-                if (reader.ElementType == typeof(Sheets)) continue;
-                do
-                {
-                    if (reader.ElementType == typeof(Sheet))
-                    {
-                        var sheet = (Sheet)reader.LoadCurrentElement();
-                        this.LocalIndexSheetTable.Add(localIndex++, sheet);
-                        this.OSNWorksheetTable.Add(sheet, new OSNWorksheet(sheet, (WorksheetPart)this.WorkbookPart.GetPartById(sheet.Id)));
-                    }
-                } while (reader.ReadNextSibling());
+                this.OSNWorksheetList.Add(new OSNWorksheet(sheet, (WorksheetPart)this.WorkbookPart.GetPartById(sheet.Id)));
             }
         }
 

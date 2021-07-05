@@ -6,22 +6,22 @@ using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace ExcelStringSearch
 {
-    public class OSNWorksheet
+    internal class OSNWorksheet
     {
         private readonly Sheet Sheet;
 
         private readonly WorksheetPart WorksheetPart;
         private readonly Worksheet Worksheet;
 
-        public Dictionary<uint, HashSet<Cell>> SharedStringIndexCellSetTable { get; private set; }
+        internal Dictionary<uint, HashSet<Cell>> SharedStringIndexCellSetTable { get; private set; }
 
-        public string Name
+        internal string Name
         {
             get { return this.Sheet.Name; }
             set { this.Sheet.Name = value; }
         }
 
-        public OSNWorksheet(Sheet sheet, WorksheetPart worksheetPart)
+        internal OSNWorksheet(Sheet sheet, WorksheetPart worksheetPart)
         {
             this.Sheet = sheet;
             this.WorksheetPart = worksheetPart;
